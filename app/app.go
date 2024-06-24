@@ -11,13 +11,19 @@ import (
 )
 
 func WiringRepository(db *gorm.DB, cache *driver.RedisClient, cfg *configs.Configs, logger *logrus.Logger) *repository.Repositories {
-	return &repository.Repositories{}
+	return &repository.Repositories{
+		TeamMember: repository.NewTeamMemberRepository(db, cfg, logger),
+	}
 }
 
 func WiringService(repo *repository.Repositories, cfg *configs.Configs, logger *logrus.Logger) *service.Services {
-	return &service.Services{}
+	return &service.Services{
+		TeamMember: service.NewTeamMemberService(repo.TeamMember, cfg, logger),
+	}
 }
 
 func WiringController(srv *service.Services, cfg *configs.Configs, logger *logrus.Logger) *controller.Controllers {
-	return &controller.Controllers{}
+	return &controller.Controllers{
+		TeamMember: controller.NewTeamMemberDelivery(srv.TeamMember, logger),
+	}
 }

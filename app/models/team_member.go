@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// TeamMember represents the model for an TeamMember
+// TeamMember represents the model for an TeamMembers
 type TeamMember struct {
 	ID              uint64     `json:"id" gorm:"primaryKey"`
 	Name            string     `json:"name" gorm:"not null"`
@@ -15,4 +15,8 @@ type TeamMember struct {
 	Password        string     `json:"password,omitempty" gorm:"not null"`
 	Salt            string     `json:"salt,omitempty" gorm:"not null"`
 	DefaultModel
+}
+
+func (TeamMember) TableName() string {
+	return "team_members"
 }

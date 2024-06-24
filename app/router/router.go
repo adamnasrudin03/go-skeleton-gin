@@ -28,7 +28,9 @@ func NewRoutes(h controller.Controllers) routes {
 		gtHelpers.RenderJSON(c.Writer, http.StatusOK, "welcome this server")
 	})
 
-	// v1 := r.router.Group("/api/v1")
+	v1 := r.router.Group("/api/v1")
+	r.tmRouter(v1, h.TeamMember)
+
 	r.router.NoRoute(func(c *gin.Context) {
 		err = gtHelpers.ErrRouteNotFound()
 		gtHelpers.RenderJSON(c.Writer, http.StatusNotFound, err)
