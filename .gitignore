@@ -16,10 +16,16 @@
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+db/
 
 # Go workspace file
 go.work
 go.work.sum
 
-
 .env
+.idea
+.DS_Store
+.vscode
+__debug*
+coverage.txt
+logrus.log

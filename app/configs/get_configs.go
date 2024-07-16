@@ -1,11 +1,14 @@
 package configs
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -49,6 +52,12 @@ func GetInstance() *Configs {
 	return configs
 }
 
+func LoadEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("Failed to load env file")
+	}
+}
+
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return strings.TrimSpace(value)
@@ -58,7 +67,7 @@ func getEnv(key, fallback string) string {
 
 func BackEndUrl() string {
 	backEndUrl := ``
-	switch os.Getenv(`ENVIRONMENT`) {
+	switch os.Getenv(`APP_ENV`) {
 	case `dev`:
 		backEndUrl = os.Getenv(`BACK_END_DEV_URL`)
 	case `stg`:
@@ -70,7 +79,7 @@ func BackEndUrl() string {
 }
 
 func ServiceName() string {
-	return os.Getenv("SERVICE_NAME")
+	return os.Getenv("APP_NAME")
 }
 
 func GetRedisPort() int {

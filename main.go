@@ -2,30 +2,27 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/adamnasrudin03/go-skeleton-gin/app"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/router"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/database"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/driver"
-	"github.com/joho/godotenv"
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalln("Failed to load env file")
-	}
-
+	configs.LoadEnv()
 	var (
 		cfg                  = configs.GetInstance()
 		logger               = driver.Logger(cfg)
 		cache                = driver.Redis(cfg)
+		validate             = validator.New()
 		db          *gorm.DB = database.SetupDbConnection(cfg, logger)
 		repo                 = app.WiringRepository(db, &cache, cfg, logger)
 		services             = app.WiringService(repo, cfg, logger)
-		controllers          = app.WiringController(services, cfg, logger)
+		controllers          = app.WiringController(services, cfg, logger, validate)
 	)
 
 	defer database.CloseDbConnection(db, logger)
