@@ -22,6 +22,7 @@ type TeamMemberRepository interface {
 	Create(ctx context.Context, req *models.TeamMember) (*models.TeamMember, error)
 	Update(ctx context.Context, req *models.TeamMember) error
 	Delete(ctx context.Context, req *models.TeamMember) error
+	GetList(ctx context.Context, req models.BasedFilter) ([]models.TeamMember, error)
 }
 
 type TeamMemberRepo struct {
@@ -170,4 +171,32 @@ func (r *TeamMemberRepo) Delete(ctx context.Context, req *models.TeamMember) err
 	}
 
 	return nil
+}
+
+func (r *TeamMemberRepo) GetList(ctx context.Context, req models.BasedFilter) ([]models.TeamMember, error) {
+	var (
+		opName = "TeamMemberRepository-GetList"
+		err    error
+		resp   []models.TeamMember
+		column = "*"
+	)
+	if req.CustomColumns != "" {
+		column = req.CustomColumns
+	}
+
+	db := r.DB.WithContext(ctx).Model(&models.TeamMember{}).Select(column)
+	if !req.IsNotDefaultQuery {
+		req = req.DefaultQuery()
+	}
+	if req.IsNoLimit {
+		db = db.Offset(int(req.Offset)).Limit(int(req.Limit))
+	}
+
+	err = db.Find(&resp).Error
+	if err != nil {
+		r.Logger.Errorf("%v error: %v ", opName, err)
+		return nil, err
+	}
+
+	return resp, nil
 }

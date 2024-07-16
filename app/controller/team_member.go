@@ -18,6 +18,7 @@ type TeamMemberController interface {
 	GetDetail(ctx *gin.Context)
 	Delete(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	GetList(ctx *gin.Context)
 }
 
 type TMemberController struct {
@@ -59,7 +60,7 @@ func (c *TMemberController) Create(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.Service.Create(ctx, &input)
+	res, err := c.Service.Create(ctx, input)
 	if err != nil {
 		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
@@ -143,11 +144,42 @@ func (c *TMemberController) Update(ctx *gin.Context) {
 		return
 	}
 
-	err = c.Service.Update(ctx, &input)
+	err = c.Service.Update(ctx, input)
 	if err != nil {
 		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
 	helpers.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Updated")
+}
+
+func (c *TMemberController) GetList(ctx *gin.Context) {
+	var (
+		opName = "TeamMemberController-GetList"
+		input  dto.TeamMemberListReq
+		err    error
+	)
+
+	err = ctx.ShouldBindQuery(&input)
+	if err != nil {
+		c.Logger.Errorf("%v error bind json: %v ", opName, err)
+		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrGetRequest())
+		return
+	}
+
+	// validation input user
+	err = c.Validate.Struct(input)
+	if err != nil {
+		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.FormatValidationError(err))
+		return
+	}
+
+	res, err := c.Service.GetList(ctx, input)
+	if err != nil {
+		c.Logger.Errorf("%v error: %v ", opName, err)
+		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	helpers.RenderJSON(ctx.Writer, http.StatusOK, res)
 }

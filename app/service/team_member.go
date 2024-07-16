@@ -13,10 +13,11 @@ import (
 )
 
 type TeamMemberService interface {
-	Create(ctx context.Context, req *dto.TeamMemberCreateReq) (*models.TeamMember, error)
+	Create(ctx context.Context, req dto.TeamMemberCreateReq) (*models.TeamMember, error)
 	GetByID(ctx context.Context, id uint64) (*models.TeamMember, error)
 	DeleteByID(ctx context.Context, id uint64) error
-	Update(ctx context.Context, req *dto.TeamMemberUpdateReq) error
+	Update(ctx context.Context, req dto.TeamMemberUpdateReq) error
+	GetList(ctx context.Context, req dto.TeamMemberListReq) (*helpers.Pagination, error)
 }
 
 type TeamMemberSrv struct {
@@ -37,7 +38,7 @@ func NewTeamMemberService(
 	}
 }
 
-func (s TeamMemberSrv) Create(ctx context.Context, req *dto.TeamMemberCreateReq) (*models.TeamMember, error) {
+func (s TeamMemberSrv) Create(ctx context.Context, req dto.TeamMemberCreateReq) (*models.TeamMember, error) {
 	var (
 		opName = "TeamMemberService-Create"
 		err    error
@@ -120,7 +121,7 @@ func (s TeamMemberSrv) DeleteByID(ctx context.Context, id uint64) error {
 	return nil
 }
 
-func (s TeamMemberSrv) Update(ctx context.Context, req *dto.TeamMemberUpdateReq) error {
+func (s TeamMemberSrv) Update(ctx context.Context, req dto.TeamMemberUpdateReq) error {
 	var (
 		opName = "TeamMemberService-Update"
 		err    error
@@ -153,4 +154,57 @@ func (s TeamMemberSrv) Update(ctx context.Context, req *dto.TeamMemberUpdateReq)
 	}
 
 	return nil
+}
+
+func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (*helpers.Pagination, error) {
+	var (
+		opName = "TeamMemberService-GetList"
+		err    error
+		resp   *helpers.Pagination
+	)
+
+	params := models.BasedFilter{
+		Limit:             req.Limit,
+		Page:              req.Page,
+		IsNoLimit:         false,
+		IsNotDefaultQuery: false,
+	}
+	data, err := s.Repo.GetList(ctx, params)
+	if err != nil {
+		s.Logger.Errorf("%s, failed get list: %v", opName, err)
+		return nil, helpers.ErrDB()
+	}
+
+	totalRecords := len(data)
+	resp = &helpers.Pagination{
+		Data: data,
+		Meta: helpers.Meta{
+			Page:         req.Page,
+			Limit:        req.Limit,
+			TotalRecords: totalRecords,
+		},
+	}
+
+	// total records in less than limit
+	if totalRecords > 0 && totalRecords != params.Limit {
+		return resp, nil
+	}
+
+	// get total data
+	if totalRecords > 0 {
+		params.CustomColumns = "id"
+		params.IsNotDefaultQuery = true
+		params.Offset = (params.Page - 1) * params.Limit
+		params.Limit = models.DefaultLimitIsTotalDataTrue * params.Limit
+
+		total, err := s.Repo.GetList(ctx, params)
+		if err != nil {
+			s.Logger.Errorf("%s, failed get total data: %v", opName, err)
+			return nil, helpers.ErrDB()
+		}
+		totalRecords = len(total)
+		resp.Meta.TotalRecords = totalRecords
+	}
+
+	return resp, nil
 }
