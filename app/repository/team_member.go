@@ -22,7 +22,7 @@ type TeamMemberRepository interface {
 	Create(ctx context.Context, req *models.TeamMember) (*models.TeamMember, error)
 	Update(ctx context.Context, req *models.TeamMember) error
 	Delete(ctx context.Context, req *models.TeamMember) error
-	GetList(ctx context.Context, req models.BasedFilter) ([]models.TeamMember, error)
+	GetList(ctx context.Context, req dto.TeamMemberListReq) ([]models.TeamMember, error)
 }
 
 type TeamMemberRepo struct {
@@ -173,7 +173,7 @@ func (r *TeamMemberRepo) Delete(ctx context.Context, req *models.TeamMember) err
 	return nil
 }
 
-func (r *TeamMemberRepo) GetList(ctx context.Context, req models.BasedFilter) ([]models.TeamMember, error) {
+func (r *TeamMemberRepo) GetList(ctx context.Context, req dto.TeamMemberListReq) ([]models.TeamMember, error) {
 	var (
 		opName = "TeamMemberRepository-GetList"
 		err    error
@@ -185,11 +185,19 @@ func (r *TeamMemberRepo) GetList(ctx context.Context, req models.BasedFilter) ([
 	}
 
 	db := r.DB.WithContext(ctx).Model(&models.TeamMember{}).Select(column)
+	if req.Search != "" {
+		db = db.Where("email LIKE ?", "%"+req.Search+"%")
+	}
+
 	if !req.IsNotDefaultQuery {
-		req = req.DefaultQuery()
+		req.BasedFilter = req.DefaultQuery()
 	}
 	if req.IsNoLimit {
 		db = db.Offset(int(req.Offset)).Limit(int(req.Limit))
+	}
+
+	if models.IsValidOrderBy[req.OrderBy] && req.SortBy != "" {
+		db = db.Order(req.SortBy + " " + req.OrderBy)
 	}
 
 	err = db.Find(&resp).Error

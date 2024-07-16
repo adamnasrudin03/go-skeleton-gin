@@ -1,5 +1,10 @@
 package dto
 
+import (
+	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
+	"github.com/adamnasrudin03/go-template/pkg/helpers"
+)
+
 type TeamMemberDetailReq struct {
 	ID             uint64 `json:"id"`
 	Name           string `json:"name"`
@@ -23,6 +28,30 @@ type TeamMemberUpdateReq struct {
 }
 
 type TeamMemberListReq struct {
-	Page  int `json:"page" form:"page" validate:"default=1"`
-	Limit int `json:"limit" form:"limit" validate:"default=10"`
+	Search string `json:"search" form:"search"`
+	models.BasedFilter
+}
+
+func (m *TeamMemberListReq) Validate() error {
+	if m.Page <= 0 {
+		m.Page = 1
+	}
+
+	if m.Limit <= 0 {
+		m.Limit = 10
+	}
+
+	m.Search = helpers.ToLower(m.Search)
+
+	m.OrderBy = helpers.ToUpper(m.OrderBy)
+	if !models.IsValidOrderBy[m.OrderBy] && m.OrderBy != "" {
+		return helpers.ErrInvalidFormat("order_by", "order_by")
+	}
+
+	m.SortBy = helpers.ToLower(m.SortBy)
+	if m.OrderBy != "" && m.SortBy == "" {
+		return helpers.ErrIsRequired("sort_by", "sort_by")
+	}
+
+	return nil
 }

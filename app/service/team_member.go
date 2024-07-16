@@ -162,14 +162,12 @@ func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (
 		err    error
 		resp   *helpers.Pagination
 	)
-
-	params := models.BasedFilter{
-		Limit:             req.Limit,
-		Page:              req.Page,
-		IsNoLimit:         false,
-		IsNotDefaultQuery: false,
+	err = req.Validate()
+	if err != nil {
+		return nil, err
 	}
-	data, err := s.Repo.GetList(ctx, params)
+
+	data, err := s.Repo.GetList(ctx, req)
 	if err != nil {
 		s.Logger.Errorf("%s, failed get list: %v", opName, err)
 		return nil, helpers.ErrDB()
@@ -186,18 +184,18 @@ func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (
 	}
 
 	// total records in less than limit
-	if totalRecords > 0 && totalRecords != params.Limit {
+	if totalRecords > 0 && totalRecords != req.Limit {
 		return resp, nil
 	}
 
 	// get total data
 	if totalRecords > 0 {
-		params.CustomColumns = "id"
-		params.IsNotDefaultQuery = true
-		params.Offset = (params.Page - 1) * params.Limit
-		params.Limit = models.DefaultLimitIsTotalDataTrue * params.Limit
+		req.CustomColumns = "id"
+		req.IsNotDefaultQuery = true
+		req.Offset = (req.Page - 1) * req.Limit
+		req.Limit = models.DefaultLimitIsTotalDataTrue * req.Limit
 
-		total, err := s.Repo.GetList(ctx, params)
+		total, err := s.Repo.GetList(ctx, req)
 		if err != nil {
 			s.Logger.Errorf("%s, failed get total data: %v", opName, err)
 			return nil, helpers.ErrDB()

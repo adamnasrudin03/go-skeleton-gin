@@ -167,13 +167,6 @@ func (c *TMemberController) GetList(ctx *gin.Context) {
 		return
 	}
 
-	// validation input user
-	err = c.Validate.Struct(input)
-	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.FormatValidationError(err))
-		return
-	}
-
 	res, err := c.Service.GetList(ctx, input)
 	if err != nil {
 		c.Logger.Errorf("%v error: %v ", opName, err)
