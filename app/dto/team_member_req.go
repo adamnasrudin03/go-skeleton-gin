@@ -6,6 +6,7 @@ type TeamMemberDetailReq struct {
 	UsernameGithub string `json:"username_github"`
 	Email          string `json:"email"`
 	CustomColumn   string `json:"custom_column"`
+	NotID          uint64 `json:"not_id"`
 }
 
 type TeamMemberCreateReq struct {
@@ -19,4 +20,9 @@ type TeamMemberUpdateReq struct {
 	Name           string `json:"name" validate:"required"`
 	UsernameGithub string `json:"username_github" validate:"required"`
 	Email          string `json:"email" validate:"required,email"`
+}
+
+type TeamMemberListReq struct {
+	Page  int `json:"page" form:"page" validate:"default=1"`
+	Limit int `json:"limit" form:"limit" validate:"default=10"`
 }

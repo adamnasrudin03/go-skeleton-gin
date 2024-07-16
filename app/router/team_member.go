@@ -9,9 +9,10 @@ import (
 func (r routes) tmRouter(rg *gin.RouterGroup, handler controller.TeamMemberController) {
 	tm := rg.Group("/team-members")
 	{
-		tm.POST("/", middlewares.SetAuthBasic(), handler.Create)
+		tm.POST("", middlewares.SetAuthBasic(), handler.Create)
 		tm.GET("/:id", handler.GetDetail)
 		tm.DELETE("/:id", middlewares.SetAuthBasic(), handler.Delete)
+		tm.PUT("/:id", middlewares.SetAuthBasic(), handler.Update)
 	}
 
 }

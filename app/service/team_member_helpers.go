@@ -15,6 +15,7 @@ func (s TeamMemberSrv) checkDuplicate(ctx context.Context, req dto.TeamMemberDet
 	detail, err := s.Repo.GetDetail(ctx, dto.TeamMemberDetailReq{
 		CustomColumn: "id",
 		Email:        req.Email,
+		NotID:        req.NotID,
 	})
 	if err != nil {
 		s.Logger.Errorf("%s, failed check duplicate email: %v", opName, err)
@@ -28,6 +29,7 @@ func (s TeamMemberSrv) checkDuplicate(ctx context.Context, req dto.TeamMemberDet
 	detail, err = s.Repo.GetDetail(ctx, dto.TeamMemberDetailReq{
 		CustomColumn:   "id",
 		UsernameGithub: req.UsernameGithub,
+		NotID:          req.NotID,
 	})
 	if err != nil {
 		s.Logger.Errorf("%s, failed check duplicate username_github: %v", opName, err)

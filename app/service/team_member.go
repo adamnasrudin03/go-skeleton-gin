@@ -16,6 +16,7 @@ type TeamMemberService interface {
 	Create(ctx context.Context, req *dto.TeamMemberCreateReq) (*models.TeamMember, error)
 	GetByID(ctx context.Context, id uint64) (*models.TeamMember, error)
 	DeleteByID(ctx context.Context, id uint64) error
+	Update(ctx context.Context, req *dto.TeamMemberUpdateReq) error
 }
 
 type TeamMemberSrv struct {
@@ -115,6 +116,41 @@ func (s TeamMemberSrv) DeleteByID(ctx context.Context, id uint64) error {
 	}
 
 	go s.Repo.DeleteCache(context.Background(), key)
+
+	return nil
+}
+
+func (s TeamMemberSrv) Update(ctx context.Context, req *dto.TeamMemberUpdateReq) error {
+	var (
+		opName = "TeamMemberService-Update"
+		err    error
+	)
+
+	_, err = s.GetByID(ctx, req.ID)
+	if err != nil {
+		s.Logger.Errorf("%s, failed get detail: %v", opName, err)
+		return err
+	}
+
+	err = s.checkDuplicate(ctx, dto.TeamMemberDetailReq{
+		Email:          req.Email,
+		UsernameGithub: req.UsernameGithub,
+		NotID:          req.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = s.Repo.Update(ctx, &models.TeamMember{
+		ID:             req.ID,
+		Name:           req.Name,
+		Email:          req.Email,
+		UsernameGithub: req.UsernameGithub,
+	})
+	if err != nil {
+		s.Logger.Errorf("%s, failed update db: %v", opName, err)
+		return helpers.ErrUpdatedDB()
+	}
 
 	return nil
 }

@@ -17,6 +17,7 @@ type TeamMemberController interface {
 	Create(ctx *gin.Context)
 	GetDetail(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	Update(ctx *gin.Context)
 }
 
 type TMemberController struct {
@@ -111,4 +112,42 @@ func (c *TMemberController) Delete(ctx *gin.Context) {
 	}
 
 	helpers.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Deleted")
+}
+
+func (c *TMemberController) Update(ctx *gin.Context) {
+	var (
+		opName  = "TeamMemberController-Update"
+		idParam = strings.TrimSpace(ctx.Param("id"))
+		input   dto.TeamMemberUpdateReq
+		err     error
+	)
+
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.Logger.Errorf("%v error parse param: %v ", opName, err)
+		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrInvalid("ID Anggota team", "Team Member ID"))
+		return
+	}
+
+	err = ctx.ShouldBindJSON(&input)
+	if err != nil {
+		c.Logger.Errorf("%v error bind json: %v ", opName, err)
+		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrGetRequest())
+		return
+	}
+	input.ID = id
+	// validation input user
+	err = c.Validate.Struct(input)
+	if err != nil {
+		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.FormatValidationError(err))
+		return
+	}
+
+	err = c.Service.Update(ctx, &input)
+	if err != nil {
+		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	helpers.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Updated")
 }

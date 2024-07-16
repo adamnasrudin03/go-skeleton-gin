@@ -106,6 +106,9 @@ func (r *TeamMemberRepo) GetDetail(ctx context.Context, req dto.TeamMemberDetail
 	if req.ID > 0 {
 		db = db.Where("id = ?", req.ID)
 	}
+	if req.NotID > 0 {
+		db = db.Where("id != ?", req.NotID)
+	}
 	if req.Email != "" {
 		db = db.Where("email = ?", req.Email)
 	}
