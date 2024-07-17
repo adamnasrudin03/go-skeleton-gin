@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	help "github.com/adamnasrudin03/go-helpers"
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/repository"
-	"github.com/adamnasrudin03/go-template/pkg/helpers"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +18,7 @@ type TeamMemberService interface {
 	GetByID(ctx context.Context, id uint64) (*models.TeamMember, error)
 	DeleteByID(ctx context.Context, id uint64) error
 	Update(ctx context.Context, req dto.TeamMemberUpdateReq) error
-	GetList(ctx context.Context, req dto.TeamMemberListReq) (*helpers.Pagination, error)
+	GetList(ctx context.Context, req dto.TeamMemberListReq) (*response_mapper.Pagination, error)
 }
 
 type TeamMemberSrv struct {
@@ -45,8 +46,8 @@ func (s TeamMemberSrv) Create(ctx context.Context, req dto.TeamMemberCreateReq) 
 		resp   *models.TeamMember
 	)
 
-	req.Email = helpers.ToLower(req.Email)
-	req.UsernameGithub = helpers.ToLower(req.UsernameGithub)
+	req.Email = help.ToLower(req.Email)
+	req.UsernameGithub = help.ToLower(req.UsernameGithub)
 
 	err = s.checkDuplicate(ctx, dto.TeamMemberDetailReq{
 		Email:          req.Email,
@@ -63,7 +64,7 @@ func (s TeamMemberSrv) Create(ctx context.Context, req dto.TeamMemberCreateReq) 
 	})
 	if err != nil {
 		s.Logger.Errorf("%s, failed create db: %v", opName, err)
-		return nil, helpers.ErrCreatedDB()
+		return nil, response_mapper.ErrCreatedDB()
 	}
 
 	return resp, nil
@@ -87,12 +88,12 @@ func (s TeamMemberSrv) GetByID(ctx context.Context, id uint64) (*models.TeamMemb
 	})
 	if err != nil {
 		s.Logger.Errorf("%s, failed get detail: %v", opName, err)
-		return nil, helpers.ErrDB()
+		return nil, response_mapper.ErrDB()
 	}
 
 	isExist := detail != nil && detail.ID > 0
 	if !isExist {
-		return nil, helpers.ErrNotFound()
+		return nil, response_mapper.ErrNotFound()
 	}
 
 	go s.Repo.CreateCache(context.Background(), key, detail, time.Minute)
@@ -116,7 +117,7 @@ func (s TeamMemberSrv) DeleteByID(ctx context.Context, id uint64) error {
 	err = s.Repo.Delete(ctx, &models.TeamMember{ID: id})
 	if err != nil {
 		s.Logger.Errorf("%s, failed delete db: %v", opName, err)
-		return helpers.ErrDB()
+		return response_mapper.ErrDB()
 	}
 
 	go s.Repo.DeleteCache(context.Background(), key)
@@ -154,18 +155,18 @@ func (s TeamMemberSrv) Update(ctx context.Context, req dto.TeamMemberUpdateReq) 
 	})
 	if err != nil {
 		s.Logger.Errorf("%s, failed update db: %v", opName, err)
-		return helpers.ErrUpdatedDB()
+		return response_mapper.ErrUpdatedDB()
 	}
 
 	go s.Repo.DeleteCache(context.Background(), key)
 	return nil
 }
 
-func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (*helpers.Pagination, error) {
+func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (*response_mapper.Pagination, error) {
 	var (
 		opName = "TeamMemberService-GetList"
 		err    error
-		resp   *helpers.Pagination
+		resp   *response_mapper.Pagination
 	)
 	err = req.Validate()
 	if err != nil {
@@ -175,13 +176,13 @@ func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (
 	data, err := s.Repo.GetList(ctx, req)
 	if err != nil {
 		s.Logger.Errorf("%s, failed get list: %v", opName, err)
-		return nil, helpers.ErrDB()
+		return nil, response_mapper.ErrDB()
 	}
 
 	totalRecords := len(data)
-	resp = &helpers.Pagination{
+	resp = &response_mapper.Pagination{
 		Data: data,
-		Meta: helpers.Meta{
+		Meta: response_mapper.Meta{
 			Page:         req.Page,
 			Limit:        req.Limit,
 			TotalRecords: totalRecords,
@@ -203,7 +204,7 @@ func (s TeamMemberSrv) GetList(ctx context.Context, req dto.TeamMemberListReq) (
 		total, err := s.Repo.GetList(ctx, req)
 		if err != nil {
 			s.Logger.Errorf("%s, failed get total data: %v", opName, err)
-			return nil, helpers.ErrDB()
+			return nil, response_mapper.ErrDB()
 		}
 		totalRecords = len(total)
 		resp.Meta.TotalRecords = totalRecords

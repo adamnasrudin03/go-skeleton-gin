@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/service"
-	"github.com/adamnasrudin03/go-template/pkg/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -49,24 +49,24 @@ func (c *TMemberController) Create(ctx *gin.Context) {
 	err = ctx.ShouldBindJSON(&input)
 	if err != nil {
 		c.Logger.Errorf("%v error bind json: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrGetRequest())
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrGetRequest())
 		return
 	}
 
 	// validation input user
 	err = c.Validate.Struct(input)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.FormatValidationError(err))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.FormatValidationError(err))
 		return
 	}
 
 	res, err := c.Service.Create(ctx, input)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
-	helpers.RenderJSON(ctx.Writer, http.StatusCreated, res)
+	response_mapper.RenderJSON(ctx.Writer, http.StatusCreated, res)
 }
 
 func (c *TMemberController) GetDetail(ctx *gin.Context) {
@@ -79,17 +79,17 @@ func (c *TMemberController) GetDetail(ctx *gin.Context) {
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
 		return
 	}
 
 	res, err := c.Service.GetByID(ctx, id)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
-	helpers.RenderJSON(ctx.Writer, http.StatusOK, res)
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, res)
 }
 
 func (c *TMemberController) Delete(ctx *gin.Context) {
@@ -102,17 +102,17 @@ func (c *TMemberController) Delete(ctx *gin.Context) {
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
 		return
 	}
 
 	err = c.Service.DeleteByID(ctx, id)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
-	helpers.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Deleted")
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Deleted")
 }
 
 func (c *TMemberController) Update(ctx *gin.Context) {
@@ -126,31 +126,31 @@ func (c *TMemberController) Update(ctx *gin.Context) {
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
 		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
 		return
 	}
 
 	err = ctx.ShouldBindJSON(&input)
 	if err != nil {
 		c.Logger.Errorf("%v error bind json: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrGetRequest())
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrGetRequest())
 		return
 	}
 	input.ID = id
 	// validation input user
 	err = c.Validate.Struct(input)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.FormatValidationError(err))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.FormatValidationError(err))
 		return
 	}
 
 	err = c.Service.Update(ctx, input)
 	if err != nil {
-		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
-	helpers.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Updated")
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Updated")
 }
 
 func (c *TMemberController) GetList(ctx *gin.Context) {
@@ -163,16 +163,16 @@ func (c *TMemberController) GetList(ctx *gin.Context) {
 	err = ctx.ShouldBindQuery(&input)
 	if err != nil {
 		c.Logger.Errorf("%v error bind json: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusBadRequest, helpers.ErrGetRequest())
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrGetRequest())
 		return
 	}
 
 	res, err := c.Service.GetList(ctx, input)
 	if err != nil {
 		c.Logger.Errorf("%v error: %v ", opName, err)
-		helpers.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
+		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
 
-	helpers.RenderJSON(ctx.Writer, http.StatusOK, res)
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, res)
 }

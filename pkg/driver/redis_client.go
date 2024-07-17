@@ -3,7 +3,7 @@ package driver
 import (
 	"time"
 
-	gtHelpers "github.com/adamnasrudin03/go-template/pkg/helpers"
+	help "github.com/adamnasrudin03/go-helpers"
 	"github.com/go-redis/redis"
 )
 
@@ -43,7 +43,7 @@ func (c *redisCtx) Get(key string) (string, error) {
 }
 
 func (c *redisCtx) Set(key string, value interface{}, expDur time.Duration) error {
-	payload, err := gtHelpers.SafeJsonMarshal(value)
+	payload, err := help.SafeJsonMarshal(value)
 	if err != nil {
 		logger.Error(err)
 		return err

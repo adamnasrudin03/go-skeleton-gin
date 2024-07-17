@@ -3,8 +3,8 @@ package router
 import (
 	"net/http"
 
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/controller"
-	gtHelpers "github.com/adamnasrudin03/go-template/pkg/helpers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -25,15 +25,15 @@ func NewRoutes(h controller.Controllers) routes {
 	r.router.Use(cors.Default())
 
 	r.router.GET("/", func(c *gin.Context) {
-		gtHelpers.RenderJSON(c.Writer, http.StatusOK, "welcome this server")
+		response_mapper.RenderJSON(c.Writer, http.StatusOK, "welcome this server")
 	})
 
 	v1 := r.router.Group("/v1")
 	r.tmRouter(v1, h.TeamMember)
 
 	r.router.NoRoute(func(c *gin.Context) {
-		err = gtHelpers.ErrRouteNotFound()
-		gtHelpers.RenderJSON(c.Writer, http.StatusNotFound, err)
+		err = response_mapper.ErrRouteNotFound()
+		response_mapper.RenderJSON(c.Writer, http.StatusNotFound, err)
 	})
 	return r
 }

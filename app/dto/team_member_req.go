@@ -1,8 +1,9 @@
 package dto
 
 import (
+	help "github.com/adamnasrudin03/go-helpers"
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
-	"github.com/adamnasrudin03/go-template/pkg/helpers"
 )
 
 type TeamMemberDetailReq struct {
@@ -41,16 +42,16 @@ func (m *TeamMemberListReq) Validate() error {
 		m.Limit = 10
 	}
 
-	m.Search = helpers.ToLower(m.Search)
+	m.Search = help.ToLower(m.Search)
 
-	m.OrderBy = helpers.ToUpper(m.OrderBy)
+	m.OrderBy = help.ToUpper(m.OrderBy)
 	if !models.IsValidOrderBy[m.OrderBy] && m.OrderBy != "" {
-		return helpers.ErrInvalidFormat("order_by", "order_by")
+		return response_mapper.ErrInvalidFormat("order_by", "order_by")
 	}
 
-	m.SortBy = helpers.ToLower(m.SortBy)
+	m.SortBy = help.ToLower(m.SortBy)
 	if m.OrderBy != "" && m.SortBy == "" {
-		return helpers.ErrIsRequired("sort_by", "sort_by")
+		return response_mapper.ErrIsRequired("sort_by", "sort_by")
 	}
 
 	return nil
