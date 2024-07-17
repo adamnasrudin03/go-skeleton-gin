@@ -112,7 +112,10 @@ func (c *TMemberController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Deleted")
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, response_mapper.MultiLanguages{
+		ID: "Anggota Tim Berhasil Dihapus",
+		EN: "Team Member Deleted Successfully",
+	})
 }
 
 func (c *TMemberController) Update(ctx *gin.Context) {
@@ -150,7 +153,10 @@ func (c *TMemberController) Update(ctx *gin.Context) {
 		return
 	}
 
-	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, "Team Member Updated")
+	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, response_mapper.MultiLanguages{
+		ID: "Anggota Tim Berhasil Diperbarui",
+		EN: "Team Member Updated Successfully",
+	})
 }
 
 func (c *TMemberController) GetList(ctx *gin.Context) {

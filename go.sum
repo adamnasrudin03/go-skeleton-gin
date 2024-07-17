@@ -1,5 +1,5 @@
-github.com/adamnasrudin03/go-helpers v0.0.2 h1:O4IL62Q15KxD9B1fU4KuM5nVoZRA0ZwEvLTbZklby6E=
-github.com/adamnasrudin03/go-helpers v0.0.2/go.mod h1:Fpu/h8J6Sy967Z4XIpRCbfHwZB7Nfxdzai2brs10rws=
+github.com/adamnasrudin03/go-helpers v0.0.3 h1:+EMmA+aRX3zGmvrKxyFHMNL+xYGHuS0PdmEEu6rimNM=
+github.com/adamnasrudin03/go-helpers v0.0.3/go.mod h1:Fpu/h8J6Sy967Z4XIpRCbfHwZB7Nfxdzai2brs10rws=
 github.com/bytedance/sonic v1.11.6 h1:oUp34TzMlL+OY1OUWxHqsdkgC/Zfc85zGqw9siXjrc0=
 github.com/bytedance/sonic v1.11.6/go.mod h1:LysEHSvpvDySVdC2f87zGWf6CIKJcAvqab1ZaiQtds4=
 github.com/bytedance/sonic/loader v0.1.1 h1:c+e5Pt1k/cy5wMveRDyk2X4B9hF4g7an8N3zCYjJFNM=
