@@ -45,6 +45,9 @@ func (s TeamMemberSrv) Create(ctx context.Context, req dto.TeamMemberCreateReq) 
 		resp   *models.TeamMember
 	)
 
+	req.Email = helpers.ToLower(req.Email)
+	req.UsernameGithub = helpers.ToLower(req.UsernameGithub)
+
 	err = s.checkDuplicate(ctx, dto.TeamMemberDetailReq{
 		Email:          req.Email,
 		UsernameGithub: req.UsernameGithub,
@@ -124,6 +127,7 @@ func (s TeamMemberSrv) DeleteByID(ctx context.Context, id uint64) error {
 func (s TeamMemberSrv) Update(ctx context.Context, req dto.TeamMemberUpdateReq) error {
 	var (
 		opName = "TeamMemberService-Update"
+		key    = models.KeyCacheTeamMemberDetail(req.ID)
 		err    error
 	)
 
@@ -153,6 +157,7 @@ func (s TeamMemberSrv) Update(ctx context.Context, req dto.TeamMemberUpdateReq) 
 		return helpers.ErrUpdatedDB()
 	}
 
+	go s.Repo.DeleteCache(context.Background(), key)
 	return nil
 }
 

@@ -192,7 +192,7 @@ func (r *TeamMemberRepo) GetList(ctx context.Context, req dto.TeamMemberListReq)
 	if !req.IsNotDefaultQuery {
 		req.BasedFilter = req.DefaultQuery()
 	}
-	if req.IsNoLimit {
+	if !req.IsNoLimit {
 		db = db.Offset(int(req.Offset)).Limit(int(req.Limit))
 	}
 

@@ -29,7 +29,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1"
+									"value": "6"
 								}
 							]
 						}
@@ -71,7 +71,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "2"
+									"value": "6"
 								}
 							]
 						}
@@ -100,7 +100,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Adam \",\r\n    \"username_github\": \"Adam\",\r\n    \"email\": \"Adam@example.com\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Adam 6\",\r\n    \"username_github\": \"adam6\",\r\n    \"email\": \"adam6@example.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -144,7 +144,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Adam \",\r\n    \"username_github\": \"Adam\",\r\n    \"email\": \"Adam@example.com\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Adam 6 updated\",\r\n    \"username_github\": \"adam6updated\",\r\n    \"email\": \"adam6updated@example.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -166,7 +166,54 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "3"
+									"value": "6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/v1/team-members?page=1&limit=5&order_by=DESC&sort_by=created_at&search=@example.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"v1",
+								"team-members"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "default 1"
+								},
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "default 10"
+								},
+								{
+									"key": "order_by",
+									"value": "DESC",
+									"description": "ASC / DESC"
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at",
+									"description": "field name"
+								},
+								{
+									"key": "search",
+									"value": "@example.com",
+									"description": "by email"
 								}
 							]
 						}
