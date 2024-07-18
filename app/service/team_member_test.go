@@ -133,3 +133,113 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 		})
 	}
 }
+
+func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Create() {
+	params := dto.TeamMemberCreateReq{
+		Name:           "adam",
+		UsernameGithub: "adamnasrudin03",
+		Email:          "adam@example.com",
+	}
+	tests := []struct {
+		name     string
+		req      dto.TeamMemberCreateReq
+		mockFunc func(input dto.TeamMemberCreateReq)
+		want     *models.TeamMember
+		wantErr  bool
+	}{
+		{
+			name: "duplicate",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberCreateReq) {
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+				}).Return(nil, nil).Once()
+
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn:   "id",
+					UsernameGithub: input.UsernameGithub,
+				}).Return(&models.TeamMember{ID: 1}, nil).Once()
+
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "failed create record",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberCreateReq) {
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+				}).Return(nil, nil).Once()
+
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn:   "id",
+					UsernameGithub: input.UsernameGithub,
+				}).Return(nil, nil).Once()
+
+				record := &models.TeamMember{
+					Name:           input.Name,
+					Email:          input.Email,
+					UsernameGithub: input.UsernameGithub,
+				}
+				srv.repo.On("Create", mock.Anything, record).Return(nil, errors.New("invalid")).Once()
+
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "success",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberCreateReq) {
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+				}).Return(nil, nil).Once()
+
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn:   "id",
+					UsernameGithub: input.UsernameGithub,
+				}).Return(nil, nil).Once()
+
+				record := &models.TeamMember{
+					Name:           input.Name,
+					Email:          input.Email,
+					UsernameGithub: input.UsernameGithub,
+				}
+				srv.repo.On("Create", mock.Anything, record).Return(&models.TeamMember{
+					ID:             101,
+					Name:           input.Name,
+					Email:          input.Email,
+					UsernameGithub: input.UsernameGithub,
+				}, nil).Once()
+
+			},
+			want: &models.TeamMember{
+				ID:             101,
+				Name:           params.Name,
+				Email:          params.Email,
+				UsernameGithub: params.UsernameGithub,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		srv.T().Run(tt.name, func(t *testing.T) {
+			if tt.mockFunc != nil {
+				tt.mockFunc(tt.req)
+			}
+
+			got, err := srv.service.Create(srv.ctx, tt.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TeamMemberSrv.Create() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TeamMemberSrv.Create() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
