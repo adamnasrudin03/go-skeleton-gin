@@ -14,6 +14,7 @@ import (
 )
 
 type TeamMemberService interface {
+	checkDuplicate(ctx context.Context, req dto.TeamMemberDetailReq) error
 	Create(ctx context.Context, req dto.TeamMemberCreateReq) (*models.TeamMember, error)
 	GetByID(ctx context.Context, id uint64) (*models.TeamMember, error)
 	DeleteByID(ctx context.Context, id uint64) error
