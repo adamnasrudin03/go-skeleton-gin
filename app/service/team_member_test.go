@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/repository/mocks"
@@ -430,6 +431,125 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Update() {
 
 			if err := srv.service.Update(srv.ctx, tt.req); (err != nil) != tt.wantErr {
 				t.Errorf("TeamMemberSrv.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetList() {
+	params := dto.TeamMemberListReq{
+		BasedFilter: models.BasedFilter{
+			Limit: 1,
+			Page:  1,
+		},
+	}
+
+	tests := []struct {
+		name     string
+		req      dto.TeamMemberListReq
+		mockFunc func(input dto.TeamMemberListReq)
+		want     *response_mapper.Pagination
+		wantErr  bool
+	}{
+		{
+			name: "invalid params",
+			req: dto.TeamMemberListReq{
+				BasedFilter: models.BasedFilter{
+					OrderBy: "invalid",
+				},
+			},
+			mockFunc: func(input dto.TeamMemberListReq) {
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "failed get records",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberListReq) {
+				srv.repo.On("GetList", mock.Anything, input).Return(nil, errors.New("invalid")).Once()
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "success total records less than limit",
+			req: dto.TeamMemberListReq{
+				BasedFilter: models.BasedFilter{
+					Limit: 10,
+					Page:  1,
+				},
+			},
+			mockFunc: func(input dto.TeamMemberListReq) {
+				srv.repo.On("GetList", mock.Anything, input).Return(srv.teamMembers, nil).Once()
+			},
+			want: &response_mapper.Pagination{
+				Meta: response_mapper.Meta{
+					Page:         1,
+					Limit:        10,
+					TotalRecords: len(srv.teamMembers),
+				},
+				Data: srv.teamMembers,
+			},
+			wantErr: false,
+		},
+		{
+			name: "failed get total records",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberListReq) {
+				srv.repo.On("GetList", mock.Anything, input).Return([]models.TeamMember{srv.teamMembers[0]}, nil).Once()
+
+				input.CustomColumns = "id"
+				input.IsNotDefaultQuery = true
+				input.Offset = (input.Page - 1) * input.Limit
+				input.Limit = models.DefaultLimitIsTotalDataTrue * input.Limit
+				srv.repo.On("GetList", mock.Anything, input).Return(nil, errors.New("invalid")).Once()
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "success total records more than limit",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberListReq) {
+				srv.repo.On("GetList", mock.Anything, input).Return([]models.TeamMember{srv.teamMembers[0]}, nil).Once()
+
+				input.CustomColumns = "id"
+				input.IsNotDefaultQuery = true
+				input.Offset = (input.Page - 1) * input.Limit
+				input.Limit = models.DefaultLimitIsTotalDataTrue * input.Limit
+
+				total := []models.TeamMember{}
+				for i := 0; i < len(srv.teamMembers); i++ {
+					val := models.TeamMember{ID: srv.teamMembers[i].ID}
+					total = append(total, val)
+				}
+				srv.repo.On("GetList", mock.Anything, input).Return(total, nil).Once()
+			},
+			want: &response_mapper.Pagination{
+				Meta: response_mapper.Meta{
+					Page:         params.Page,
+					Limit:        params.Limit,
+					TotalRecords: len(srv.teamMembers),
+				},
+				Data: []models.TeamMember{srv.teamMembers[0]},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		srv.T().Run(tt.name, func(t *testing.T) {
+			if tt.mockFunc != nil {
+				tt.mockFunc(tt.req)
+			}
+
+			got, err := srv.service.GetList(srv.ctx, tt.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("TeamMemberSrv.GetList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TeamMemberSrv.GetList() = %v, want %v", got, tt.want)
 			}
 		})
 	}
