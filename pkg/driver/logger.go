@@ -1,7 +1,7 @@
 package driver
 
 import (
-	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
+	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 
 	"github.com/sirupsen/logrus"
 )

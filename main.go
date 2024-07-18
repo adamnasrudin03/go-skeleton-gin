@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/adamnasrudin03/go-skeleton-gin/app"
-	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/router"
+	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/database"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/driver"
 	"github.com/go-playground/validator/v10"

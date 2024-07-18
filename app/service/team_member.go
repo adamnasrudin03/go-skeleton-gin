@@ -6,10 +6,10 @@ import (
 
 	help "github.com/adamnasrudin03/go-helpers"
 	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
-	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/repository"
+	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/sirupsen/logrus"
 )
 

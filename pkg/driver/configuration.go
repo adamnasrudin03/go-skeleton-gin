@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
+	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/go-redis/redis"
 )
 
