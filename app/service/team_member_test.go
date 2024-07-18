@@ -320,3 +320,117 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_DeleteByID() {
 		})
 	}
 }
+
+func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Update() {
+	params := dto.TeamMemberUpdateReq{
+		ID:             srv.teamMember.ID,
+		Name:           srv.teamMember.Name,
+		UsernameGithub: srv.teamMember.UsernameGithub,
+		Email:          srv.teamMember.Email,
+	}
+
+	tests := []struct {
+		name     string
+		req      dto.TeamMemberUpdateReq
+		mockFunc func(input dto.TeamMemberUpdateReq)
+		wantErr  bool
+	}{
+		{
+			name: "not found",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberUpdateReq) {
+				key := models.KeyCacheTeamMemberDetail(input.ID)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{ID: 0}).Return(false).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input.ID}).Return(nil, nil).Once()
+			},
+			wantErr: true,
+		},
+		{
+			name: "email duplicate",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberUpdateReq) {
+				key := models.KeyCacheTeamMemberDetail(input.ID)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{ID: 0}).Return(false).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input.ID}).Return(&srv.teamMember, nil).Once()
+				srv.repo.On("CreateCache", mock.Anything, key, &srv.teamMember, time.Minute).Return().Once()
+				// duplicate email
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+					NotID:        input.ID,
+				}).Return(&models.TeamMember{ID: 101}, nil).Once()
+			},
+			wantErr: true,
+		},
+		{
+			name: "failed update record",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberUpdateReq) {
+				key := models.KeyCacheTeamMemberDetail(input.ID)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{ID: 0}).Return(false).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input.ID}).Return(&srv.teamMember, nil).Once()
+				srv.repo.On("CreateCache", mock.Anything, key, &srv.teamMember, time.Minute).Return().Once()
+				// Check duplicate
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+					NotID:        input.ID,
+				}).Return(nil, nil).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn:   "id",
+					UsernameGithub: input.UsernameGithub,
+					NotID:          input.ID,
+				}).Return(nil, nil).Once()
+
+				srv.repo.On("Update", mock.Anything, &models.TeamMember{
+					ID:             input.ID,
+					Name:           input.Name,
+					Email:          input.Email,
+					UsernameGithub: input.UsernameGithub,
+				}).Return(errors.New("invalid")).Once()
+			},
+			wantErr: true,
+		},
+		{
+			name: "success",
+			req:  params,
+			mockFunc: func(input dto.TeamMemberUpdateReq) {
+				key := models.KeyCacheTeamMemberDetail(input.ID)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{ID: 0}).Return(false).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input.ID}).Return(&srv.teamMember, nil).Once()
+				srv.repo.On("CreateCache", mock.Anything, key, &srv.teamMember, time.Minute).Return().Once()
+				// Check duplicate
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn: "id",
+					Email:        input.Email,
+					NotID:        input.ID,
+				}).Return(nil, nil).Once()
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					CustomColumn:   "id",
+					UsernameGithub: input.UsernameGithub,
+					NotID:          input.ID,
+				}).Return(nil, nil).Once()
+
+				srv.repo.On("Update", mock.Anything, &models.TeamMember{
+					ID:             input.ID,
+					Name:           input.Name,
+					Email:          input.Email,
+					UsernameGithub: input.UsernameGithub,
+				}).Return(nil).Once()
+				srv.repo.On("DeleteCache", mock.Anything, key).Return().Once()
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		srv.T().Run(tt.name, func(t *testing.T) {
+			if tt.mockFunc != nil {
+				tt.mockFunc(tt.req)
+			}
+
+			if err := srv.service.Update(srv.ctx, tt.req); (err != nil) != tt.wantErr {
+				t.Errorf("TeamMemberSrv.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
