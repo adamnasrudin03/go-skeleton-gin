@@ -3,7 +3,7 @@ module github.com/adamnasrudin03/go-skeleton-gin
 go 1.22.3
 
 require (
-	github.com/adamnasrudin03/go-helpers v0.0.3
+	github.com/adamnasrudin03/go-helpers v0.0.4
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.22.0
