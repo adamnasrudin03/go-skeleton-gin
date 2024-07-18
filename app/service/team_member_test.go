@@ -18,9 +18,11 @@ import (
 
 type TeamMemberServiceTestSuite struct {
 	suite.Suite
-	repo    *mocks.TeamMemberRepository
-	ctx     context.Context
-	service TeamMemberService
+	repo        *mocks.TeamMemberRepository
+	ctx         context.Context
+	service     TeamMemberService
+	teamMember  models.TeamMember
+	teamMembers []models.TeamMember
 }
 
 func (srv *TeamMemberServiceTestSuite) SetupTest() {
@@ -28,6 +30,21 @@ func (srv *TeamMemberServiceTestSuite) SetupTest() {
 		cfg    = configs.GetInstance()
 		logger = driver.Logger(cfg)
 	)
+	srv.teamMember = models.TeamMember{
+		ID:             1,
+		Name:           "adam",
+		UsernameGithub: "adamnasrudin.vercel.app",
+		Email:          "adam@example.com",
+	}
+	srv.teamMembers = []models.TeamMember{
+		srv.teamMember,
+		{
+			ID:             2,
+			Name:           "adam nasrudin",
+			UsernameGithub: "adamnasrudin03",
+			Email:          "adamnasrudin@example.com",
+		},
+	}
 
 	srv.repo = &mocks.TeamMemberRepository{}
 	srv.ctx = context.Background()
@@ -48,12 +65,10 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 	}{
 		{
 			name: "Success with cache",
-			id:   1,
+			id:   srv.teamMember.ID,
 			mockFunc: func(input uint64) {
 				key := models.KeyCacheTeamMemberDetail(input)
-				res := models.TeamMember{
-					ID: input,
-				}
+				res := srv.teamMember
 				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
 					ID: 0,
 				}).Return(true).Run(func(args mock.Arguments) {
@@ -61,12 +76,12 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 					*target = res
 				}).Once()
 			},
-			want:    &models.TeamMember{ID: 1},
+			want:    &srv.teamMember,
 			wantErr: false,
 		},
 		{
 			name: "failed ge db",
-			id:   1,
+			id:   srv.teamMember.ID,
 			mockFunc: func(input uint64) {
 				key := models.KeyCacheTeamMemberDetail(input)
 				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
@@ -82,7 +97,7 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 		},
 		{
 			name: "not found",
-			id:   1,
+			id:   srv.teamMember.ID,
 			mockFunc: func(input uint64) {
 				key := models.KeyCacheTeamMemberDetail(input)
 				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
@@ -98,7 +113,7 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 		},
 		{
 			name: "success",
-			id:   1,
+			id:   srv.teamMember.ID,
 			mockFunc: func(input uint64) {
 				key := models.KeyCacheTeamMemberDetail(input)
 				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
@@ -107,12 +122,12 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 
 				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
 					ID: input,
-				}).Return(&models.TeamMember{ID: input}, nil).Once()
+				}).Return(&srv.teamMember, nil).Once()
 
-				srv.repo.On("CreateCache", mock.Anything, key, &models.TeamMember{ID: input}, time.Minute).Return().Once()
+				srv.repo.On("CreateCache", mock.Anything, key, &srv.teamMember, time.Minute).Return().Once()
 
 			},
-			want:    &models.TeamMember{ID: 1},
+			want:    &srv.teamMember,
 			wantErr: false,
 		},
 	}
@@ -136,9 +151,9 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_GetByID() {
 
 func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Create() {
 	params := dto.TeamMemberCreateReq{
-		Name:           "adam",
-		UsernameGithub: "adamnasrudin03",
-		Email:          "adam@example.com",
+		Name:           srv.teamMember.Name,
+		UsernameGithub: srv.teamMember.UsernameGithub,
+		Email:          srv.teamMember.Email,
 	}
 	tests := []struct {
 		name     string
@@ -159,7 +174,7 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Create() {
 				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
 					CustomColumn:   "id",
 					UsernameGithub: input.UsernameGithub,
-				}).Return(&models.TeamMember{ID: 1}, nil).Once()
+				}).Return(&models.TeamMember{ID: srv.teamMember.ID}, nil).Once()
 
 			},
 			want:    nil,
@@ -209,20 +224,10 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Create() {
 					Email:          input.Email,
 					UsernameGithub: input.UsernameGithub,
 				}
-				srv.repo.On("Create", mock.Anything, record).Return(&models.TeamMember{
-					ID:             101,
-					Name:           input.Name,
-					Email:          input.Email,
-					UsernameGithub: input.UsernameGithub,
-				}, nil).Once()
+				srv.repo.On("Create", mock.Anything, record).Return(&srv.teamMember, nil).Once()
 
 			},
-			want: &models.TeamMember{
-				ID:             101,
-				Name:           params.Name,
-				Email:          params.Email,
-				UsernameGithub: params.UsernameGithub,
-			},
+			want:    &srv.teamMember,
 			wantErr: false,
 		},
 	}
@@ -239,6 +244,78 @@ func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_Create() {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TeamMemberSrv.Create() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (srv *TeamMemberServiceTestSuite) TestTeamMemberSrv_DeleteByID() {
+	tests := []struct {
+		name     string
+		id       uint64
+		mockFunc func(input uint64)
+		wantErr  bool
+	}{
+		{
+			name: "not found",
+			id:   srv.teamMember.ID,
+			mockFunc: func(input uint64) {
+				key := models.KeyCacheTeamMemberDetail(input)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
+					ID: 0,
+				}).Return(false).Once()
+
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{
+					ID: input,
+				}).Return(nil, nil).Once()
+			},
+			wantErr: true,
+		},
+		{
+			name: "failed delete",
+			id:   srv.teamMember.ID,
+			mockFunc: func(input uint64) {
+				key := models.KeyCacheTeamMemberDetail(input)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
+					ID: 0,
+				}).Return(false).Once()
+
+				record := &models.TeamMember{ID: input}
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input}).Return(record, nil).Once()
+				srv.repo.On("CreateCache", mock.Anything, key, record, time.Minute).Return().Once()
+
+				srv.repo.On("Delete", mock.Anything, &models.TeamMember{
+					ID: input,
+				}).Return(errors.New("invalid")).Once()
+			},
+			wantErr: true,
+		},
+		{
+			name: "success",
+			id:   srv.teamMember.ID,
+			mockFunc: func(input uint64) {
+				key := models.KeyCacheTeamMemberDetail(input)
+				srv.repo.On("GetCache", mock.Anything, key, &models.TeamMember{
+					ID: 0,
+				}).Return(false).Once()
+
+				srv.repo.On("GetDetail", mock.Anything, dto.TeamMemberDetailReq{ID: input}).Return(&srv.teamMember, nil).Once()
+				srv.repo.On("CreateCache", mock.Anything, key, &srv.teamMember, time.Minute).Return().Once()
+
+				srv.repo.On("Delete", mock.Anything, &models.TeamMember{ID: input}).Return(nil).Once()
+				srv.repo.On("DeleteCache", mock.Anything, key).Return().Once()
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		srv.T().Run(tt.name, func(t *testing.T) {
+			if tt.mockFunc != nil {
+				tt.mockFunc(tt.id)
+			}
+
+			if err := srv.service.DeleteByID(srv.ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("TeamMemberSrv.DeleteByID() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
