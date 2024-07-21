@@ -28,6 +28,22 @@
   make cover
 ```
 
+
+## Build project by docker
+- check ip address in terminal
+    ```sh
+        ipconfig
+    ```
+- change data environment in file ./docker-compose.yml
+- build with docker compose
+    ```sh
+        docker-compose -f "docker-compose.yml" up -d --build 
+    ```
+    - with make file
+    ```sh
+        make docker-compose
+    ```
+    
 ## Structure Response RESTfull API 
 - Error
 ```json

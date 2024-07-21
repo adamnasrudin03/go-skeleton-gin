@@ -12,3 +12,4 @@ cover :
 		-coverpkg=$$(go list ./app/service ./app/dto ./app/models  | grep -v mocks | tr '\n' ',')
 	@go tool cover -func=coverage.txt
 
+docker-compose: docker-compose -f "docker-compose.yml" up -d --build 
