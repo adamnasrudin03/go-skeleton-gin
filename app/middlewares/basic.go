@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
-	"github.com/adamnasrudin03/go-skeleton-gin/configs"
+	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/gin-gonic/gin"
 )
 

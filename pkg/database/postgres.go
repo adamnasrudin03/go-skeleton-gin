@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
-	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/seeders"
 	"github.com/sirupsen/logrus"
 

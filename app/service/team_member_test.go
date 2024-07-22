@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/adamnasrudin03/go-skeleton-gin/app/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/repository/mocks"
-	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/driver"
 
 	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
