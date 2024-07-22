@@ -7,12 +7,13 @@ import (
 	"testing"
 	"time"
 
-	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/models"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/repository/mocks"
 	"github.com/adamnasrudin03/go-skeleton-gin/configs"
 	"github.com/adamnasrudin03/go-skeleton-gin/pkg/driver"
+
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -28,7 +29,7 @@ type TeamMemberServiceTestSuite struct {
 
 func (srv *TeamMemberServiceTestSuite) SetupTest() {
 	var (
-		cfg    = configs.GetInstance()
+		cfg    = &configs.Configs{}
 		logger = driver.Logger(cfg)
 	)
 	srv.teamMember = models.TeamMember{

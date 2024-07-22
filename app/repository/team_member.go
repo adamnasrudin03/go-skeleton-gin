@@ -102,6 +102,10 @@ func (r *TeamMemberRepo) GetDetail(ctx context.Context, req dto.TeamMemberDetail
 		resp   *models.TeamMember
 		column = "*"
 	)
+	if req.CustomColumn != "" {
+		column = req.CustomColumn
+	}
+
 	db := r.DB.WithContext(ctx).Model(&models.TeamMember{}).Select(column)
 
 	if req.ID > 0 {

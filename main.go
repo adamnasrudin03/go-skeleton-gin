@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	help "github.com/adamnasrudin03/go-helpers"
 	"github.com/adamnasrudin03/go-skeleton-gin/app"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/router"
 	"github.com/adamnasrudin03/go-skeleton-gin/configs"
@@ -12,8 +14,14 @@ import (
 	"gorm.io/gorm"
 )
 
+func init() {
+	// set timezone local
+	loc, _ := time.LoadLocation(help.AsiaJakarta)
+	time.Local = loc
+
+}
+
 func main() {
-	configs.LoadEnv()
 	var (
 		cfg                  = configs.GetInstance()
 		logger               = driver.Logger(cfg)
