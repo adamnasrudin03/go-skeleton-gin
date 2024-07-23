@@ -23,7 +23,7 @@ type TeamMemberController interface {
 	GetList(ctx *gin.Context)
 }
 
-type TMemberController struct {
+type TeamMemberHandler struct {
 	Service  service.TeamMemberService
 	Logger   *logrus.Logger
 	Validate *validator.Validate
@@ -34,14 +34,14 @@ func NewTeamMemberDelivery(
 	logger *logrus.Logger,
 	validator *validator.Validate,
 ) TeamMemberController {
-	return &TMemberController{
+	return &TeamMemberHandler{
 		Service:  srv,
 		Logger:   logger,
 		Validate: validator,
 	}
 }
 
-func (c *TMemberController) Mount(rg *gin.RouterGroup) {
+func (c *TeamMemberHandler) Mount(rg *gin.RouterGroup) {
 	tm := rg.Group("/team-members")
 	{
 		tm.GET("", c.GetList)
@@ -52,18 +52,17 @@ func (c *TMemberController) Mount(rg *gin.RouterGroup) {
 	}
 }
 
-func (c *TMemberController) getParamID(ctx *gin.Context) (uint64, error) {
-	const opName = "TeamMemberController-getParamID"
+func (c *TeamMemberHandler) getParamID(ctx *gin.Context) (uint64, error) {
 	idParam := strings.TrimSpace(ctx.Param("id"))
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {
-		c.Logger.Errorf("%v error parse param: %v ", opName, err)
+		c.Logger.Errorf("TeamMemberController-getParamID error parse param: %v ", err)
 		return 0, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID")
 	}
 	return id, nil
 }
 
-func (c *TMemberController) Create(ctx *gin.Context) {
+func (c *TeamMemberHandler) Create(ctx *gin.Context) {
 	var (
 		opName = "TeamMemberController-Create"
 		input  dto.TeamMemberCreateReq
@@ -93,7 +92,7 @@ func (c *TMemberController) Create(ctx *gin.Context) {
 	response_mapper.RenderJSON(ctx.Writer, http.StatusCreated, res)
 }
 
-func (c *TMemberController) GetDetail(ctx *gin.Context) {
+func (c *TeamMemberHandler) GetDetail(ctx *gin.Context) {
 	var (
 		opName = "TeamMemberController-GetDetail"
 		err    error
@@ -115,7 +114,7 @@ func (c *TMemberController) GetDetail(ctx *gin.Context) {
 	response_mapper.RenderJSON(ctx.Writer, http.StatusOK, res)
 }
 
-func (c *TMemberController) Delete(ctx *gin.Context) {
+func (c *TeamMemberHandler) Delete(ctx *gin.Context) {
 	var (
 		opName = "TeamMemberController-Delete"
 		err    error
@@ -140,7 +139,7 @@ func (c *TMemberController) Delete(ctx *gin.Context) {
 	})
 }
 
-func (c *TMemberController) Update(ctx *gin.Context) {
+func (c *TeamMemberHandler) Update(ctx *gin.Context) {
 	var (
 		opName = "TeamMemberController-Update"
 		input  dto.TeamMemberUpdateReq
@@ -179,7 +178,7 @@ func (c *TMemberController) Update(ctx *gin.Context) {
 	})
 }
 
-func (c *TMemberController) GetList(ctx *gin.Context) {
+func (c *TeamMemberHandler) GetList(ctx *gin.Context) {
 	var (
 		opName = "TeamMemberController-GetList"
 		input  dto.TeamMemberListReq
