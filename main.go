@@ -35,7 +35,9 @@ func main() {
 
 	defer database.CloseDbConnection(db, logger)
 
-	r := router.NewRoutes(*controllers)
+	r := router.NewRoutes()
+	v1 := r.HttpServer.Group("/v1")
+	controllers.TeamMember.Mount(v1)
 
 	listen := fmt.Sprintf(":%v", cfg.App.Port)
 	r.Run(listen)

@@ -7,6 +7,7 @@ import (
 
 	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/dto"
+	"github.com/adamnasrudin03/go-skeleton-gin/app/middlewares"
 	"github.com/adamnasrudin03/go-skeleton-gin/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -14,6 +15,7 @@ import (
 )
 
 type TeamMemberController interface {
+	Mount(rg *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	GetDetail(ctx *gin.Context)
 	Delete(ctx *gin.Context)
@@ -37,6 +39,28 @@ func NewTeamMemberDelivery(
 		Logger:   logger,
 		Validate: validator,
 	}
+}
+
+func (c *TMemberController) Mount(rg *gin.RouterGroup) {
+	tm := rg.Group("/team-members")
+	{
+		tm.GET("", c.GetList)
+		tm.POST("", middlewares.SetAuthBasic(), c.Create)
+		tm.GET("/:id", c.GetDetail)
+		tm.DELETE("/:id", middlewares.SetAuthBasic(), c.Delete)
+		tm.PUT("/:id", middlewares.SetAuthBasic(), c.Update)
+	}
+}
+
+func (c *TMemberController) getParamID(ctx *gin.Context) (uint64, error) {
+	const opName = "TeamMemberController-getParamID"
+	idParam := strings.TrimSpace(ctx.Param("id"))
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.Logger.Errorf("%v error parse param: %v ", opName, err)
+		return 0, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID")
+	}
+	return id, nil
 }
 
 func (c *TMemberController) Create(ctx *gin.Context) {
@@ -71,20 +95,19 @@ func (c *TMemberController) Create(ctx *gin.Context) {
 
 func (c *TMemberController) GetDetail(ctx *gin.Context) {
 	var (
-		opName  = "TeamMemberController-GetDetail"
-		idParam = strings.TrimSpace(ctx.Param("id"))
-		err     error
+		opName = "TeamMemberController-GetDetail"
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := c.getParamID(ctx)
 	if err != nil {
-		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, err)
 		return
 	}
 
 	res, err := c.Service.GetByID(ctx, id)
 	if err != nil {
+		c.Logger.Errorf("%v error: %v ", opName, err)
 		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
@@ -94,20 +117,19 @@ func (c *TMemberController) GetDetail(ctx *gin.Context) {
 
 func (c *TMemberController) Delete(ctx *gin.Context) {
 	var (
-		opName  = "TeamMemberController-Delete"
-		idParam = strings.TrimSpace(ctx.Param("id"))
-		err     error
+		opName = "TeamMemberController-Delete"
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := c.getParamID(ctx)
 	if err != nil {
-		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, err)
 		return
 	}
 
 	err = c.Service.DeleteByID(ctx, id)
 	if err != nil {
+		c.Logger.Errorf("%v error: %v ", opName, err)
 		response_mapper.RenderJSON(ctx.Writer, http.StatusInternalServerError, err)
 		return
 	}
@@ -120,16 +142,14 @@ func (c *TMemberController) Delete(ctx *gin.Context) {
 
 func (c *TMemberController) Update(ctx *gin.Context) {
 	var (
-		opName  = "TeamMemberController-Update"
-		idParam = strings.TrimSpace(ctx.Param("id"))
-		input   dto.TeamMemberUpdateReq
-		err     error
+		opName = "TeamMemberController-Update"
+		input  dto.TeamMemberUpdateReq
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := c.getParamID(ctx)
 	if err != nil {
-		c.Logger.Errorf("%v error parse param: %v ", opName, err)
-		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		response_mapper.RenderJSON(ctx.Writer, http.StatusBadRequest, err)
 		return
 	}
 
