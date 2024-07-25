@@ -24,7 +24,10 @@ func NewRoutes() routes {
 	r.HttpServer.Use(cors.Default())
 
 	r.HttpServer.GET("/", func(c *gin.Context) {
-		response_mapper.RenderJSON(c.Writer, http.StatusOK, "welcome this server")
+		response_mapper.RenderJSON(c.Writer, http.StatusOK, response_mapper.MultiLanguages{
+			ID: "selamat datang di server ini",
+			EN: "welcome this server",
+		})
 	})
 
 	r.HttpServer.NoRoute(func(c *gin.Context) {
