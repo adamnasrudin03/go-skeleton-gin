@@ -33,7 +33,7 @@ func NewTeamMemberService(
 	cfg *configs.Configs,
 	logger *logrus.Logger,
 ) TeamMemberService {
-	return TeamMemberSrv{
+	return &TeamMemberSrv{
 		Repo:   tmRepo,
 		Cfg:    cfg,
 		Logger: logger,
